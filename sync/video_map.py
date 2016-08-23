@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
-# author:wenhui
-# 时间：2015-08-12 
+# author:zihe
+# 时间：2016-08-12 
 # 描述：视频指纹模块
 
 import os
@@ -32,15 +32,15 @@ class VideoMapper(object):
         pass
         self.logger = logger
         self.local_db = BzHandler()
-        self.video_hash_ = VideoHash(logger)  #
+        self.video_hash_ = VideoHash(logger)  
 
 
-    def get_video_list_from_db(self,bz_user_id,max_video_id):
+    def get_video_list_from_db(self,bz_user_id,max_video_id):  #从本地数据库取出数据，并对时间标签进行处理
         video_list = []
         for video in self.local_db.get_all_video_info(bz_user_id,max_video_id):
             video['video_sign'] = ''
             if video['video_upload_time']:
-                video['video_upload_time'] = int(time.mktime(video['video_upload_time'].timetuple()))
+                video['video_upload_time'] = int(time.mktime(video['video_upload_time'].timetuple()))  #将时间转化为int型
             else:
                 video['video_upload_time'] = 0
             video_list.append(video)
@@ -48,7 +48,7 @@ class VideoMapper(object):
         return video_list
 
 
-    def get_video_hash_from_local(self,video_json_file):
+    def get_video_hash_from_local(self,video_json_file):  #
         if not os.path.exists(video_json_file):
             return {}
         try:
@@ -73,7 +73,7 @@ class VideoMapper(object):
         return False
 
 
-    def add_2_time_hash(self,video_list, video_time_hash):
+    def add_2_time_hash(self,video_list, video_time_hash):  #更新时间hash
         if not video_list:
             return video_time_hash
         for video in video_list:
@@ -85,13 +85,13 @@ class VideoMapper(object):
         return video_time_hash
 
 
-    def get_video_sign_hash(self,video_time_hash):
+    def get_video_sign_hash(self,video_time_hash):    
         video_sign_hash = {}
         for vtime, video_list in video_time_hash.items():
             for video in video_list:
                 video_id = video['video_id']
                 if 'video_sign' in video and video['video_sign']:
-                    video_sign_hash[video_id] = video['video_sign']
+                    video_sign_hash[video_id] = video['video_sign']  #id -> video_sign
         return video_sign_hash
 
 
@@ -104,7 +104,7 @@ class VideoMapper(object):
         return video_id_hash
 
 
-    def get_max_video_id(self,video_time_hash):
+    def get_max_video_id(self,video_time_hash):  #获得最大的video hash
         if not video_time_hash:
             return 0
         max_video_id = 0
@@ -122,11 +122,11 @@ class VideoMapper(object):
         return md5.hexdigest()
 
 
-    def _map(self,bz_user_id,video_json_file):
+    def _map(self,bz_user_id,video_json_file):  
         # video_time => video
-        video_time_hash = self.get_video_hash_from_local(video_json_file)
+        video_time_hash = self.get_video_hash_from_local(video_json_file)   #得到时间hash
         # video_id => video_sign
-        video_sign_hash = self.get_video_sign_hash(video_time_hash)
+        video_sign_hash = self.get_video_sign_hash(video_time_hash)   
        
         add_video_list = self.get_video_list_from_db(bz_user_id,
                                     self.get_max_video_id(video_time_hash))

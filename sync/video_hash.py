@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
-# author:wenhui
-# 时间：2015-08-12 
+# author:zihe
+# 时间：2016-08-12 
 # 描述：视频指纹模块
 
 
@@ -41,7 +41,7 @@ import nlp.tagger
 import nlp.wordseg
 float_repr = lambda o: format(Decimal(o), '.4f')
 
-class Tagger(object):
+class Tagger(object):   #
 
     def __init__(self, with_stop_word=True, with_user_dict=False, with_user_idf_dict=False):
 
@@ -57,14 +57,15 @@ class Tagger(object):
         #self.allow_pos = ['n','t','s','f','v','z','b','a','r','m','q']
 
 
-    def extract_tags(self, content, top_k=20):
+    def extract_tags(self, content, top_k=20):   #提取top_k出现的标签
+
         tags = nlp.tagger.extract_tags(content, top_k, 3,allow_pos=self.allow_pos)
         if not tags:
             return []
         for tag in tags:
             tagtype = 1 if tag[u'tag'] in self._location else 0
             tag[u'tagtype'] = tagtype
-        return tags[:top_k]
+        return tags[:top_k]  #返回top_k出现的标签 
 
 
 
@@ -81,24 +82,31 @@ class VideoHash(object):
         self.seg_cache_ = {}
 
 
-    def tag(self, title):  
+    def tag(self, title):  #提取标签
         if not title:
             return []
 
         if title in self.tag_cache_:
-            return self.tag_cache_[title]
+            return  self.tag_cache_[title]
+
         tags = self.tagger.extract_tags(title)
+
         self.tag_cache_[title] = tags
+
         # 提取标签
         return tags
 
 
-    def seg(self,title):
+    def seg(self,title): #分割
+
         if not title:
             return []
+
         if title in self.seg_cache_:
             return self.seg_cache_[title]
+
         words = self.segger.cut(title)
+
         self.seg_cache_[title] = words
         return words
 
@@ -140,8 +148,10 @@ class VideoHash(object):
             print json.dumps(title_tags,ensure_ascii=False)
         title_tags = [x['tag'] for x in title_tags if is_character(x['tag'])]
 
-        seconds_tag = seconds/5
+        seconds_tag = seconds/5    
+
         tags = sorted(title_tags + [str(seconds_tag)])
+        
         if debug:
             print json.dumps(tags,ensure_ascii=False)
         
@@ -155,11 +165,11 @@ class VideoHash(object):
     def title_similar(self,video_1,video_2):
 
         # 过滤不包含中文、英文字母、或者数字的tag
-        def is_character(word):
+        def is_character(word):                    #？
             if not isinstance(word,unicode):
                 word = word.decode("utf-8")
             for w in word:
-                if not utils.is_other(w):
+                if not utils.is_other(w):   #？
                     return True
             return False
 
@@ -195,7 +205,7 @@ class VideoHash(object):
         """
         tags_1  = self.tag(video_1['video_title'])
         tags_2  = self.tag(video_2['video_title'])
-        tags_1  = [x['tag'] for x in tags_1 if is_character(x['tag'])]
+        tags_1  = [x['tag'] for x in tags_1 if is_character(x['tag'])]  #？
         tags_2  = [x['tag'] for x in tags_2 if is_character(x['tag'])]
         words_1 = self.seg(video_1['video_title'])
         words_2 = self.seg(video_2['video_title'])
@@ -234,8 +244,8 @@ class VideoHash(object):
         return tag_sim
 
 
-    def similar(self,video_1,video_2):
-        title_sim = self.title_similar(video_1,video_2)
+    def similar(self,video_1,video_2):   
+        title_sim = self.title_similar(video_1,video_2)  
 
         seconds_sim = 1.0
         if not video_1['video_seconds'] or not video_2['video_seconds']:
